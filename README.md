@@ -66,6 +66,19 @@ When choosing a web server for global WordPress hosting, your geographic archite
 
 ---
 
+## SEO Impact of Server Performance & Core Web Vitals
+
+Web server performance directly influences your site's search engine optimization (SEO) and Google search rankings through Core Web Vitals:
+
+1. **Largest Contentful Paint (LCP)**: Measures loading performance. High web server latency or slow PHP execution directly delays LCP. Using high-performance servers like **OpenLiteSpeed** or **Nginx** reduces server response time (TTFB), helping achieve an LCP of under 2.5 seconds.
+2. **Interaction to Next Paint (INP)**: Measures page responsiveness. While primarily a client-side metric, slow asset delivery (JS/CSS) due to sluggish static file serving can delay the execution of interactive elements.
+3. **Cumulative Layout Shift (CLS)**: Measures visual stability. Ensure your server delivers CSS files rapidly to prevent layout shifts during page render.
+
+### Speed as a Ranking Factor
+Google has explicitly stated that page speed is a ranking factor for both desktop and mobile searches. A slow WordPress site hosted on an unoptimized Apache server with high latency can suffer from lower organic visibility, reduced crawl budget efficiency, and higher bounce rates. Transitioning to a high-concurrency architecture like Nginx or OpenLiteSpeed is a foundational step in technical SEO.
+
+---
+
 ## 🛠️ Project Structure
 
 ```

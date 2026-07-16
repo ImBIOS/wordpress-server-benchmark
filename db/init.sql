@@ -1,0 +1,11 @@
+CREATE DATABASE IF NOT EXISTS wp_ols;
+CREATE DATABASE IF NOT EXISTS wp_nginx;
+CREATE DATABASE IF NOT EXISTS wp_apache;
+CREATE DATABASE IF NOT EXISTS wp_caddy;
+
+CREATE USER IF NOT EXISTS 'wp_user'@'%' IDENTIFIED BY 'wp_password';
+GRANT ALL PRIVILEGES ON wp_ols.* TO 'wp_user'@'%';
+GRANT ALL PRIVILEGES ON wp_nginx.* TO 'wp_user'@'%';
+GRANT ALL PRIVILEGES ON wp_apache.* TO 'wp_user'@'%';
+GRANT ALL PRIVILEGES ON wp_caddy.* TO 'wp_user'@'%';
+FLUSH PRIVILEGES;

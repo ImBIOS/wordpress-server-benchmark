@@ -1,0 +1,13 @@
+# WordPress downloaded files
+/wordpress/
+
+# Docker volumes and local data
+.db_data/
+/data/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log

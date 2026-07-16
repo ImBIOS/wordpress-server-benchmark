@@ -1,0 +1,8 @@
+Running 15s test @ http://caddy/readme.html
+  2 threads and 10 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     9.98ms   15.28ms 145.51ms   86.85%
+    Req/Sec     1.52k   624.83     3.09k    70.00%
+  45448 requests in 15.02s, 331.79MB read
+Requests/sec:   3025.06
+Transfer/sec:     22.08MB

@@ -8,52 +8,65 @@ echo "=================================================="
 echo "    Setting up WordPress Server Benchmark         "
 echo "=================================================="
 
-# 1. Download WordPress
-if [ ! -d "wordpress" ]; then
+# 1. Download WordPress Master
+if [ ! -d "wordpress_master" ]; then
     echo "Downloading WordPress core..."
-    curl -L https://wordpress.org/latest.tar.gz | tar -xz
+    mkdir -p wordpress_master_tmp
+    curl -L https://wordpress.org/latest.tar.gz | tar -xz -C wordpress_master_tmp --strip-components=1
+    mv wordpress_master_tmp wordpress_master
     echo "WordPress downloaded successfully."
 else
-    echo "WordPress folder already exists. Skipping download."
+    echo "WordPress master folder already exists. Skipping download."
 fi
 
-# 2. Create dynamic wp-config.php
-echo "Creating dynamic wp-config.php..."
-cat <<'EOF' > wordpress/wp-config.php
+# 1.1. Download WP-CLI
+if [ ! -f "wordpress_master/wp-cli.phar" ]; then
+    echo "Downloading WP-CLI..."
+    curl -o wordpress_master/wp-cli.phar https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+    chmod +x wordpress_master/wp-cli.phar
+fi
+
+# 1.5. Generate Self-Signed SSL Certificates
+echo "Generating self-signed SSL certificates..."
+mkdir -p ssl
+if [ ! -f "ssl/server.crt" ] || [ ! -f "ssl/server.key" ]; then
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+      -keyout ssl/server.key -out ssl/server.crt \
+      -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost"
+    echo "SSL certificates generated successfully."
+else
+    echo "SSL certificates already exist."
+fi
+
+# 2. Copy WordPress to individual server folders
+SERVERS=("ols" "nginx" "apache" "caddy")
+
+for server in "${SERVERS[@]}"; do
+    dest_dir="wordpress_${server}"
+    if [ ! -d "$dest_dir" ]; then
+        echo "Creating WordPress directory for $server ($dest_dir)..."
+        cp -r wordpress_master "$dest_dir"
+    else
+        echo "WordPress directory for $server already exists."
+    fi
+
+    # Create dedicated wp-config.php
+    echo "Creating wp-config.php for $server..."
+    cat <<EOF > "$dest_dir/wp-config.php"
 <?php
 /**
  * The base configuration for WordPress
- *
- * @link https://wordpress.org/support/article/editing-wp-config-php/
- *
- * @package WordPress
  */
 
+define( 'DB_NAME', 'wp_${server}' );
 define( 'DB_USER', 'wp_user' );
 define( 'DB_PASSWORD', 'wp_password' );
 define( 'DB_HOST', 'db' );
 define( 'DB_CHARSET', 'utf8' );
 define( 'DB_COLLATE', '' );
 
-// Select database based on environment variable
-$wp_db = getenv('WP_DB');
-if (!$wp_db) {
-    // Fallback to hostname/port-based selection if env var is not set
-    $host = $_SERVER['HTTP_HOST'] ?? '';
-    if (strpos($host, '8081') !== false || strpos($host, 'ols') !== false) {
-        $wp_db = 'wp_ols';
-    } elseif (strpos($host, '8082') !== false || strpos($host, 'nginx') !== false) {
-        $wp_db = 'wp_nginx';
-    } elseif (strpos($host, '8083') !== false || strpos($host, 'apache') !== false) {
-        $wp_db = 'wp_apache';
-    } elseif (strpos($host, '8084') !== false || strpos($host, 'caddy') !== false) {
-        $wp_db = 'wp_caddy';
-    } else {
-        $wp_db = 'wp_ols'; // default
-    }
-}
-
-define( 'DB_NAME', $wp_db );
+// Enable WordPress page caching
+define( 'WP_CACHE', true );
 
 // Authentication Unique Keys and Salts.
 define( 'AUTH_KEY',         'put your unique phrase here' );
@@ -65,13 +78,13 @@ define( 'SECURE_AUTH_SALT', 'put your unique phrase here' );
 define( 'LOGGED_IN_SALT',   'put your unique phrase here' );
 define( 'NONCE_SALT',       'put your unique phrase here' );
 
-$table_prefix = 'wp_';
+\$table_prefix = 'wp_';
 
 define( 'WP_DEBUG', false );
 
 // If behind a proxy/reverse proxy, detect HTTPS
-if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
-    $_SERVER['HTTPS'] = 'on';
+if (isset(\$_SERVER['HTTP_X_FORWARDED_PROTO']) && \$_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+    \$_SERVER['HTTPS'] = 'on';
 }
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -81,8 +94,35 @@ if ( ! defined( 'ABSPATH' ) ) {
 require_once ABSPATH . 'wp-settings.php';
 EOF
 
-# 3. Set permissions
-echo "Setting permissions for WordPress folder..."
-chmod -R 777 wordpress
+    # Create dedicated index-uncached.php to bypass all caching plugins/layers
+    echo "Creating index-uncached.php for $server..."
+    cat <<EOF > "$dest_dir/index-uncached.php"
+<?php
+/**
+ * Uncached WordPress Loader
+ * Forces WordPress to load the homepage dynamically without invoking caching plugins.
+ */
+define('DONOTCACHEPAGE', true);
+define('WP_CACHE', false);
+
+// Pretend we are requesting the homepage index.php to prevent 404 redirects
+\$_SERVER['SCRIPT_NAME'] = '/index.php';
+\$_SERVER['PHP_SELF'] = '/index.php';
+\$_SERVER['REQUEST_URI'] = '/';
+
+// Load the normal WordPress index
+require_once __DIR__ . '/index.php';
+EOF
+
+    # Set permissions
+    echo "Setting permissions for $dest_dir..."
+    chmod -R 777 "$dest_dir"
+done
+
+# Clean up old single wordpress directory if it exists
+if [ -d "wordpress" ]; then
+    echo "Removing legacy wordpress directory..."
+    rm -rf wordpress
+fi
 
 echo "Setup complete! Run './setup-wp.sh' after starting containers to install WordPress."

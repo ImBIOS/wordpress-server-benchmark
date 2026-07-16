@@ -26,9 +26,10 @@ services:
     environment:
       WP_DB: wp_ols
     volumes:
-      - ./wordpress:/var/www/vhosts/localhost/html
+      - ./wordpress_ols:/var/www/vhosts/localhost/html
     ports:
       - "8081:80"
+      - "9441:443"
     depends_on:
       - db
     restart: always
@@ -46,7 +47,10 @@ services:
     environment:
       WP_DB: wp_nginx
     volumes:
-      - ./wordpress:/var/www/html
+      - ./wordpress_nginx:/var/www/html
+      - ./wordpress_ols:/wordpress_ols
+      - ./wordpress_apache:/wordpress_apache
+      - ./wordpress_caddy:/wordpress_caddy
     depends_on:
       - db
     restart: always
@@ -61,10 +65,12 @@ services:
     image: nginx:alpine
     container_name: wp_nginx
     volumes:
-      - ./wordpress:/var/www/html
+      - ./wordpress_nginx:/var/www/html
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./ssl:/etc/nginx/ssl
     ports:
       - "8082:80"
+      - "9442:443"
     depends_on:
       - php-fpm-nginx
     restart: always
@@ -82,10 +88,12 @@ services:
     environment:
       WP_DB: wp_apache
     volumes:
-      - ./wordpress:/var/www/html
+      - ./wordpress_apache:/var/www/html
       - ./apache/apache.conf:/etc/apache2/conf-enabled/custom.conf
+      - ./ssl:/etc/apache2/ssl
     ports:
       - "8083:80"
+      - "9443:443"
     depends_on:
       - db
     restart: always
@@ -103,7 +111,7 @@ services:
     environment:
       WP_DB: wp_caddy
     volumes:
-      - ./wordpress:/var/www/html
+      - ./wordpress_caddy:/var/www/html
     depends_on:
       - db
     restart: always
@@ -118,10 +126,11 @@ services:
     image: caddy:alpine
     container_name: wp_caddy
     volumes:
-      - ./wordpress:/var/www/html
+      - ./wordpress_caddy:/var/www/html
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile
     ports:
       - "8084:80"
+      - "9444:443"
     depends_on:
       - php-fpm-caddy
     restart: always

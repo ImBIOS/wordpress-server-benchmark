@@ -11,10 +11,10 @@ echo "=================================================="
 # Function to check if db is ready
 wait_for_db() {
     echo "Waiting for MariaDB database to be ready..."
-    until docker compose exec db mysqladmin ping -h"localhost" -u"root" -p"root_password" --silent > /dev/null 2>&1; do
+    until docker compose exec db mysql -u root -p"root_password" -e "SHOW DATABASES;" 2>/dev/null | grep -q "wp_ols"; do
         sleep 2
     done
-    echo "MariaDB is ready!"
+    echo "MariaDB databases are fully initialized!"
 }
 
 # 1. Start containers (except benchmarker)
@@ -24,9 +24,9 @@ docker compose up -d db ols php-fpm-nginx nginx apache php-fpm-caddy caddy
 # 2. Wait for db
 wait_for_db
 
-# 3. Run WordPress installation for each database via wp-cli
+# 3. Run WordPress installation for each database via wp-cli.phar natively
 echo "Installing WordPress for OpenLiteSpeed (wp_ols)..."
-docker compose exec -e WP_DB=wp_ols php-fpm-nginx wp core install \
+docker compose exec -w /var/www/vhosts/localhost/html ols php wp-cli.phar core install \
     --url="http://ols" \
     --title="WordPress OpenLiteSpeed" \
     --admin_user="admin" \
@@ -35,8 +35,11 @@ docker compose exec -e WP_DB=wp_ols php-fpm-nginx wp core install \
     --skip-email \
     --allow-root
 
+echo "Installing LiteSpeed Cache plugin for OpenLiteSpeed..."
+docker compose exec -w /var/www/vhosts/localhost/html ols php wp-cli.phar plugin install litespeed-cache --activate --allow-root
+
 echo "Installing WordPress for Nginx (wp_nginx)..."
-docker compose exec -e WP_DB=wp_nginx php-fpm-nginx wp core install \
+docker compose exec -w /var/www/html php-fpm-nginx php wp-cli.phar core install \
     --url="http://nginx" \
     --title="WordPress Nginx" \
     --admin_user="admin" \
@@ -46,7 +49,7 @@ docker compose exec -e WP_DB=wp_nginx php-fpm-nginx wp core install \
     --allow-root
 
 echo "Installing WordPress for Apache (wp_apache)..."
-docker compose exec -e WP_DB=wp_apache php-fpm-nginx wp core install \
+docker compose exec -w /var/www/html apache php wp-cli.phar core install \
     --url="http://apache" \
     --title="WordPress Apache" \
     --admin_user="admin" \
@@ -55,8 +58,12 @@ docker compose exec -e WP_DB=wp_apache php-fpm-nginx wp core install \
     --skip-email \
     --allow-root
 
+echo "Installing WP Super Cache plugin for Apache..."
+docker compose exec -w /var/www/html apache php wp-cli.phar plugin install wp-super-cache --activate --allow-root
+docker compose exec -w /var/www/html apache php -r "define('WP_USE_THEMES', false); require('wp-load.php'); if (function_exists('wp_cache_enable')) { wp_cache_enable(); }"
+
 echo "Installing WordPress for Caddy (wp_caddy)..."
-docker compose exec -e WP_DB=wp_caddy php-fpm-nginx wp core install \
+docker compose exec -w /var/www/html php-fpm-caddy php wp-cli.phar core install \
     --url="http://caddy" \
     --title="WordPress Caddy" \
     --admin_user="admin" \
@@ -64,6 +71,10 @@ docker compose exec -e WP_DB=wp_caddy php-fpm-nginx wp core install \
     --admin_email="admin@example.com" \
     --skip-email \
     --allow-root
+
+echo "Installing WP Super Cache plugin for Caddy..."
+docker compose exec -w /var/www/html php-fpm-caddy php wp-cli.phar plugin install wp-super-cache --activate --allow-root
+docker compose exec -w /var/www/html php-fpm-caddy php -r "define('WP_USE_THEMES', false); require('wp-load.php'); if (function_exists('wp_cache_enable')) { wp_cache_enable(); }"
 
 echo "=================================================="
 echo " WordPress installation completed successfully!    "

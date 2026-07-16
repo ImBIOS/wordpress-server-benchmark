@@ -14,29 +14,55 @@ This project spins up fully isolated, resource-limited Docker containers for **O
 
 The following benchmarks were conducted inside a resource-limited Docker bridge network environment. Each web server and PHP-FPM container was limited to **1.0 CPU Core** and **512MB RAM** to ensure fair, repeatable, and realistic testing conditions.
 
-### ⚡ Static File Benchmark (`readme.html`)
-*This test evaluates the raw web server performance when serving static assets (HTML, CSS, JS, images) without invoking PHP or MariaDB.*
+---
+
+### 1. HTTP/1.1 Plain Uncached Benchmark (wrk)
+*This test evaluates the raw performance of the web servers under HTTP/1.1 without SSL/TLS overhead or caching. The dynamic test compiles and queries WordPress on every single hit.*
+
+#### ⚡ Static File Benchmark (`readme.html`)
 * **Parameters**: 2 threads, 10 concurrent connections, 15 seconds duration.
 
 | Web Server | Requests / Sec | Avg Latency | Transfer / Sec | Performance Rating |
 | :--- | :---: | :---: | :---: | :---: |
-| **🏆 OpenLiteSpeed** | **5,793.65** | **9.65ms** | **42.28MB** | **Elite (100%)** |
-| **🥈 Nginx** | **5,622.76** | **10.43ms** | **41.00MB** | **Excellent (97%)** |
-| **🥉 Caddy** | **3,025.06** | **9.98ms** | **22.08MB** | **Good (52%)** |
-| **❌ Apache** | **2,034.14** | **18.64ms** | **14.86MB** | **Moderate (35%)** |
+| **🏆 OpenLiteSpeed** | **4,848.56** | **11.57ms** | **35.39MB** | **Elite (100%)** |
+| **🥈 Nginx** | **4,806.48** | **11.76ms** | **35.05MB** | **Excellent (99%)** |
+| **🥉 Caddy** | **2,866.60** | **9.00ms** | **20.93MB** | **Good (59%)** |
+| **❌ Apache** | **2,107.10** | **19.87ms** | **15.39MB** | **Moderate (43%)** |
+
+#### 🐘 Dynamic WordPress Benchmark (Uncached `index.php`)
+* **Parameters**: 2 threads, 10 concurrent connections, 15 seconds duration.
+
+| Web Server | Requests / Sec | Avg Latency | Transfer / Sec | Performance Rating |
+| :--- | :---: | :---: | :---: | :---: |
+| **🏆 Nginx + PHP-FPM** | **9.85** | **977.36ms** | **663.27KB** | **Elite (100%)** |
+| **🥈 Caddy + PHP-FPM** | **8.05** | **1.12s** | **541.81KB** | **Excellent (82%)** |
+| **🥉 OpenLiteSpeed** | **7.31** | **918.57ms** | **493.32KB** | **Very Good (74%)** |
+| **❌ Apache (mod_php)** | **2.33** | **1.37s** | **156.76KB** | **Poor (24%)** |
 
 ---
 
-### 🐘 Dynamic WordPress Benchmark (Uncached `index.php`)
-*This test measures the raw performance of the web server's PHP and Database integration by loading the fully dynamic, uncached WordPress homepage.*
-* **Parameters**: 2 threads, 10 concurrent connections, 15 seconds duration.
+### 2. HTTP/2 SSL Cached Benchmark (h2load)
+*This test mirrors the methodology used by OpenLiteSpeed.org and HTTP2Benchmark.org. It evaluates the performance of the web servers over HTTPS/HTTP2 with caching enabled. OpenLiteSpeed uses LSCache, Nginx uses FastCGI Cache, and Apache/Caddy use WP Super Cache.*
+
+#### ⚡ Static File Benchmark (`readme.html`)
+* **Parameters**: 5000 requests, 20 concurrent clients, 2 threads, 5 max streams.
 
 | Web Server | Requests / Sec | Avg Latency | Transfer / Sec | Performance Rating |
 | :--- | :---: | :---: | :---: | :---: |
-| **🏆 Caddy + PHP-FPM** | **9.37** | **1.04s** | **630.07KB** | **Elite (100%)** |
-| **🥈 Nginx + PHP-FPM** | **7.85** | **1.09s** | **528.23KB** | **Excellent (84%)** |
-| **🥉 OpenLiteSpeed** | **7.26** | **1.32s** | **488.55KB** | **Very Good (77%)** |
-| **❌ Apache (mod_php)** | **3.19** | **1.34s** | **216.26KB** | **Poor (34%)** |
+| **🏆 OpenLiteSpeed** | **8,809.24** | **8.89ms** | **62.53MB** | **Elite (100%)** |
+| **🥈 Nginx** | **4,125.11** | **19.15ms** | **29.64MB** | **Excellent (47%)** |
+| **🥉 Caddy** | **2,376.04** | **40.62ms** | **16.87MB** | **Good (27%)** |
+| **❌ Apache** | **1,564.31** | **38.19ms** | **11.43MB** | **Moderate (18%)** |
+
+#### 🐘 Dynamic WordPress Benchmark (Cached `index.php`)
+* **Parameters**: 5000 requests, 20 concurrent clients, 2 threads, 5 max streams.
+
+| Web Server | Requests / Sec | Avg Latency | Transfer / Sec | Performance Rating |
+| :--- | :---: | :---: | :---: | :---: |
+| **🏆 OpenLiteSpeed + LSCache** | **4,916.52** | **15.33ms** | **322.45MB** | **Elite (100%)** |
+| **🥈 Nginx + FastCGI Cache** | **2,872.77** | **31.31ms** | **188.54MB** | **Excellent (58%)** |
+| **🥉 Caddy + WP Super Cache** | **857.91** | **115.52ms** | **56.29MB** | **Good (17%)** |
+| **❌ Apache + WP Super Cache** | **378.29** | **218.55ms** | **24.93MB** | **Poor (8%)** |
 
 ---
 
@@ -46,10 +72,10 @@ The following benchmarks were conducted inside a resource-limited Docker bridge 
 OpenLiteSpeed excels dramatically at serving static files due to its event-driven architecture and highly optimized kernel-level sendfile operations. In production, OLS is usually paired with the **LSCache (LiteSpeed Cache)** plugin, which bypasses PHP entirely for cached pages. This makes it an incredibly strong contender for content-heavy sites and blogs.
 
 ### 2. Nginx — The High-Concurrency Standard
-Nginx remains the gold standard for high-concurrency web hosting. Paired with PHP-FPM, it delivers highly predictable, low-latency performance under sustained load. Its static file serving is almost identical to OpenLiteSpeed, making it a robust and versatile choice for any WordPress setup.
+Nginx remains the gold standard for high-concurrency web hosting. Paired with PHP-FPM, it delivers highly predictable, low-latency performance under sustained load. In our raw uncached dynamic PHP benchmark, Nginx + PHP-FPM emerged as the winner (9.85 req/sec). Its static file serving is also extremely fast, almost identical to OpenLiteSpeed.
 
 ### 3. Caddy — Modern, Fast, and Developer-Friendly
-Caddy surprised us by winning the raw uncached dynamic PHP benchmark! Caddy's built-in `php_fastcgi` directive is highly optimized out of the box. Caddy also offers automatic HTTPS via Let's Encrypt/ZeroSSL and a modern, readable configuration file (`Caddyfile`).
+Caddy delivered an outstanding performance, coming in a close second in the raw uncached dynamic PHP benchmark (8.05 req/sec)! Caddy's built-in `php_fastcgi` directive is highly optimized out of the box. Caddy also offers automatic HTTPS via Let's Encrypt/ZeroSSL and a modern, readable configuration file (`Caddyfile`).
 
 ### 4. Apache — The Legacy Giant
 Apache with `mod_php` is the most traditional way of running WordPress, but it struggled significantly in both static and dynamic benchmarks under limited resources. Because `mod_php` embeds PHP in every Apache worker process, it is extremely memory-heavy, leading to process saturation and high latency under load.
@@ -82,14 +108,17 @@ Google has explicitly stated that page speed is a ranking factor for both deskto
 ## 🛠️ Project Structure
 
 ```
-├── apache/          # Apache Dockerfile & virtual host config
-├── benchmark/       # Benchmarking container (wrk, bash scripts)
-│   └── results/     # Raw wrk benchmark outputs (.txt & .md)
-├── caddy/           # Caddyfile configuration
-├── db/              # Database initialization scripts (init.sql)
-├── nginx/           # Nginx virtual host configuration
-├── php-fpm/         # Shared PHP-FPM Dockerfile & Opcache settings
-├── wordpress/       # WordPress core directory (downloaded during setup)
+├── apache/               # Apache Dockerfile & virtual host config
+├── benchmark/            # Benchmarking container (wrk, h2load, bash scripts)
+│   └── results/          # Raw benchmark outputs (.txt & .md)
+├── caddy/                # Caddyfile configuration
+├── db/                   # Database initialization scripts (init.sql)
+├── nginx/                # Nginx virtual host configuration
+├── php-fpm/              # Shared PHP-FPM Dockerfile & Opcache settings
+├── wordpress_ols/        # Isolated WordPress directory for OpenLiteSpeed
+├── wordpress_nginx/      # Isolated WordPress directory for Nginx
+├── wordpress_apache/     # Isolated WordPress directory for Apache
+├── wordpress_caddy/      # Isolated WordPress directory for Caddy
 ├── docker-compose.yml
 ├── setup.sh         # Host setup script (downloads WP, configures wp-config.php)
 └── setup-wp.sh      # Automated WordPress installer script (runs WP-CLI)

@@ -1,8 +1,8 @@
 Running 15s test @ http://ols/readme.html
   2 threads and 10 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency     9.65ms   15.10ms  70.12ms   81.89%
-    Req/Sec     2.91k     1.01k    9.04k    81.67%
-  87143 requests in 15.04s, 636.01MB read
-Requests/sec:   5793.65
-Transfer/sec:     42.28MB
+    Latency    11.57ms   17.22ms  67.97ms   80.88%
+    Req/Sec     2.44k   648.55     5.16k    86.00%
+  72745 requests in 15.00s, 530.93MB read
+Requests/sec:   4848.56
+Transfer/sec:     35.39MB

@@ -1,9 +1,9 @@
-Running 15s test @ http://apache/
+Running 15s test @ http://apache/index-uncached.php
   2 threads and 10 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency     1.34s   140.73ms   1.69s    76.32%
-    Req/Sec     7.18      6.95    30.00     78.79%
-  48 requests in 15.05s, 3.18MB read
+    Latency     1.37s    95.21ms   1.50s    64.00%
+    Req/Sec     7.60      7.14    20.00     72.00%
+  35 requests in 15.05s, 2.30MB read
   Socket errors: connect 0, read 0, write 0, timeout 10
-Requests/sec:      3.19
-Transfer/sec:    216.26KB
+Requests/sec:      2.33
+Transfer/sec:    156.76KB

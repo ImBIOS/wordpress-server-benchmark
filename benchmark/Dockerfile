@@ -1,7 +1,7 @@
 FROM alpine:latest
 
-# Install wrk, curl, bash, and jq
-RUN apk add --no-cache wrk curl bash jq
+# Install wrk, h2load (via nghttp2), curl, bash, and jq
+RUN apk add --no-cache wrk nghttp2 curl bash jq
 
 WORKDIR /benchmark
 

@@ -1,9 +1,8 @@
-Running 15s test @ http://nginx/
+Running 15s test @ http://nginx/index-uncached.php
   2 threads and 10 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency     1.09s   127.85ms   1.38s    80.56%
-    Req/Sec     5.88      4.89    20.00     91.11%
-  118 requests in 15.03s, 7.75MB read
-  Socket errors: connect 0, read 0, write 0, timeout 10
-Requests/sec:      7.85
-Transfer/sec:    528.23KB
+    Latency   977.36ms  234.75ms   1.29s    77.03%
+    Req/Sec     6.97      5.67    30.00     78.99%
+  148 requests in 15.03s, 9.74MB read
+Requests/sec:      9.85
+Transfer/sec:    663.27KB

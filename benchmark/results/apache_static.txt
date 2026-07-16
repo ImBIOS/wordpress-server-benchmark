@@ -1,8 +1,8 @@
 Running 15s test @ http://apache/readme.html
   2 threads and 10 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency    18.64ms   27.11ms 280.19ms   82.46%
-    Req/Sec     1.02k   284.12     2.70k    77.67%
-  30528 requests in 15.01s, 223.02MB read
-Requests/sec:   2034.14
-Transfer/sec:     14.86MB
+    Latency    19.87ms   31.85ms 297.00ms   85.55%
+    Req/Sec     1.06k   368.91     3.99k    84.33%
+  31705 requests in 15.05s, 231.63MB read
+Requests/sec:   2107.10
+Transfer/sec:     15.39MB

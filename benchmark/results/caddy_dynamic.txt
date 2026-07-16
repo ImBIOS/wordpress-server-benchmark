@@ -1,8 +1,9 @@
-Running 15s test @ http://caddy/
+Running 15s test @ http://caddy/index-uncached.php
   2 threads and 10 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency     1.04s   207.03ms   1.30s    84.40%
-    Req/Sec     5.43      3.23    19.00     53.97%
-  141 requests in 15.05s, 9.26MB read
-Requests/sec:      9.37
-Transfer/sec:    630.07KB
+    Latency     1.12s   156.92ms   1.85s    87.72%
+    Req/Sec     5.71      3.90    19.00     63.81%
+  121 requests in 15.03s, 7.95MB read
+  Socket errors: connect 0, read 0, write 0, timeout 7
+Requests/sec:      8.05
+Transfer/sec:    541.81KB

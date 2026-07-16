@@ -1,5 +1,13 @@
 # WordPress downloaded files
 /wordpress/
+/wordpress_master/
+/wordpress_ols/
+/wordpress_nginx/
+/wordpress_apache/
+/wordpress_caddy/
+
+# Local SSL Certificates
+/ssl/
 
 # Docker volumes and local data
 .db_data/

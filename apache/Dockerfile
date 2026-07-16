@@ -25,8 +25,8 @@ RUN { \
     echo 'opcache.enable_cli=1'; \
 } > /usr/local/etc/php/conf.d/opcache-recommended.ini
 
-# Enable mod_rewrite for WordPress
-RUN a2enmod rewrite
+# Enable mod_rewrite, mod_ssl, and mod_http2 for WordPress
+RUN a2enmod rewrite ssl http2
 
 # Set up WP-CLI
 RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \

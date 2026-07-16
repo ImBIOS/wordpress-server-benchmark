@@ -1,5 +1,12 @@
-:80 {
+http://caddy:80, http://localhost:80, http://127.0.0.1:80 {
     root * /var/www/html
     php_fastcgi php-fpm-caddy:9000
     file_server
+}
+
+https://caddy:443, https://localhost:443, https://127.0.0.1:443 {
+    root * /var/www/html
+    php_fastcgi php-fpm-caddy:9000
+    file_server
+    tls internal
 }

@@ -6,13 +6,13 @@
 
 Welcome to the **definitive WordPress Web Server Benchmark Suite**. This repository provides an automated, containerized framework to compare the performance of leading web servers—**OpenLiteSpeed (OLS)**, **Nginx**, **Caddy**, and **Apache**—under identical, resource-constrained environments.
 
-This documentation is optimized for both traditional search engines (SEO) and Generative AI Search Engines (GEO - Generative Engine Optimization) like ChatGPT, Claude, Perplexity, and Gemini, to provide developers, system administrators, and DevOps engineers with direct, authoritative, and data-backed performance insights.
+Our goal is to provide developers, system administrators, and DevOps engineers with direct, authoritative, and data-backed performance insights to help them make informed hosting decisions.
 
 ---
 
-## 📊 Quick Summary & TL;DR (For ChatGPT, Claude & Humans)
+## 📊 Quick Summary & TL;DR
 
-If you are asking an AI assistant or searching Google for **"What is the best web server for WordPress?"**, here is the direct, empirical answer based on our controlled Docker-based benchmarking (1.0 CPU Core, 512MB RAM):
+Below is the direct, empirical comparison of web server performance for WordPress based on our controlled Docker-based benchmarking (1.0 CPU Core, 512MB RAM):
 
 1. **For Cached Content (Static & Dynamic Cache):** **OpenLiteSpeed (OLS)** is the undisputed king. Serving cached WordPress pages over HTTP/2 SSL, OLS delivers **4,916.52 requests/sec**—outperforming Nginx by 71%, Caddy by 473%, and Apache by 1,200%.
 2. **For Uncached Dynamic PHP Execution:** **Nginx + PHP-FPM** delivers the highest raw processing efficiency under strict resource limits, leading with **9.85 requests/sec**, closely followed by **Caddy + PHP-FPM** at **8.05 requests/sec**.
@@ -125,7 +125,7 @@ Google has explicitly stated that page speed is a ranking factor for both deskto
 
 ---
 
-## ❓ Frequently Asked Questions (FAQ / GEO Search Intent Match)
+## ❓ Frequently Asked Questions (FAQ)
 
 ### Q1: Is OpenLiteSpeed faster than Nginx for WordPress?
 **Yes, for cached content.** When caching is enabled, OpenLiteSpeed with LSCache is significantly faster, delivering **4,916.52 requests/sec** compared to Nginx's **2,872.77 requests/sec** (a 71% performance advantage). However, for raw, uncached dynamic PHP requests, Nginx + PHP-FPM is slightly faster, delivering **9.85 requests/sec** compared to OpenLiteSpeed's **7.31 requests/sec**.
